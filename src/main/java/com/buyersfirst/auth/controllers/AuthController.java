@@ -30,10 +30,10 @@ public class AuthController {
     public @ResponseBody String getToken (@RequestBody TokenRequest auth) {
         try {
             Users user = userRepository.findByEmail(auth.email);
-            String hashedPass = new BCryptPasswordEncoder(10).encode(auth.password);
+            BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10);
             if (user == null)
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email or password incorrect");
-            if (user.getPassword().equals(hashedPass)) {
+            if (bCryptPasswordEncoder.matches(auth.password, user.getPassword())) {
                 return jwtBuilder.generateToken(Integer.toString(user.getId()), "USER");
             } 
             else {
