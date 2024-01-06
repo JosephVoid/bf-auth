@@ -1,5 +1,7 @@
 package com.buyersfirst.auth.controllers;
 
+import java.sql.Timestamp;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.buyersfirst.auth.interfaces.SignUpRequest;
 import com.buyersfirst.auth.interfaces.TokenRequest;
 import com.buyersfirst.auth.models.UserRepository;
 import com.buyersfirst.auth.models.Users;
@@ -41,6 +44,35 @@ public class AuthController {
             }
         } catch (PersistenceException exception) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email or password incorrect");
+        }
+    }
+
+    @PostMapping("/signup")
+    public @ResponseBody String signUp (@RequestBody SignUpRequest request) {
+        try {
+            if (request.firstname == null || request.email == null || request.password == null || request.phone == null)
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad Input");
+            if (userRepository.findUsersByEmail(request.email).size() > 0)
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email taken");
+            
+            BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10);
+            
+            Users user = new Users(
+                request.firstname, 
+                request.lastname, 
+                request.email, 
+                bCryptPasswordEncoder.encode(request.password), 
+                request.picture, 
+                request.description, 
+                request.phone, 
+                new Timestamp(System.currentTimeMillis())
+            );
+
+            userRepository.save(user);
+
+            return jwtBuilder.generateToken(Integer.toString(user.getId()), "USER");
+        } catch (Exception exception) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getLocalizedMessage());
         }
     }
 
