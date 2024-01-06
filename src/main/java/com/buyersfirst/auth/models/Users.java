@@ -1,13 +1,30 @@
 package com.buyersfirst.auth.models;
 
+import java.sql.Timestamp;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(schema = "users")
 public class Users {
+    public Users(Integer id, String first_name, String last_name, String email, String password, String picture,
+            String description, String phone, Timestamp joinedOn) {
+        this.id = id;
+        this.first_name = first_name;
+        this.last_name = last_name;
+        this.email = email;
+        this.password = password;
+        this.picture = picture;
+        this.description = description;
+        this.phone = phone;
+        JoinedOn = joinedOn;
+    }
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
@@ -67,5 +84,35 @@ public class Users {
     }
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    private String phone;
+    public Users() {
+    }
+    public Users(String first_name, String last_name, String email, String password, String picture, String description,
+            String phone, Timestamp JoinedOn) {
+        this.first_name = first_name;
+        this.last_name = last_name;
+        this.email = email;
+        this.password = password;
+        this.picture = picture;
+        this.description = description;
+        this.phone = phone;
+        this.JoinedOn = JoinedOn;
+    }
+    public String getPhone() {
+        return phone;
+    }
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    @Column(name = "joined_on")
+    private Timestamp JoinedOn;
+    public Timestamp getJoinedOn() {
+        return JoinedOn;
+    }
+    public void setJoinedOn(Timestamp joinedOn) {
+        JoinedOn = joinedOn;
     }
 }
