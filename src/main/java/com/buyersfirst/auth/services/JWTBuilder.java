@@ -1,8 +1,7 @@
 package com.buyersfirst.auth.services;
 
+import java.security.Key;
 import org.jose4j.jwa.AlgorithmConstraints;
-import org.jose4j.jwk.RsaJsonWebKey;
-import org.jose4j.jwk.RsaJwkGenerator;
 import org.jose4j.jws.AlgorithmIdentifiers;
 import org.jose4j.jws.JsonWebSignature;
 import org.jose4j.jwt.JwtClaims;
@@ -11,6 +10,7 @@ import org.jose4j.jwt.consumer.ErrorCodes;
 import org.jose4j.jwt.consumer.InvalidJwtException;
 import org.jose4j.jwt.consumer.JwtConsumer;
 import org.jose4j.jwt.consumer.JwtConsumerBuilder;
+import org.jose4j.keys.HmacKey;
 import org.jose4j.lang.JoseException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -26,7 +26,8 @@ public class JWTBuilder {
     private String jwtSecret;
     @Value("${jwt.expiry}")
     private Float jwtExpiry;
-    RsaJsonWebKey rsaJsonWebKey;
+
+    Key key;
 
     public JWTBuilder() {
 
@@ -45,15 +46,13 @@ public class JWTBuilder {
             jwtClaims.setClaim("userId", usersId);
             JsonWebSignature jws = new JsonWebSignature();
             jws.setPayload(jwtClaims.toJson());
-            jws.setKey(rsaJsonWebKey.getPrivateKey());
-            jws.setKeyIdHeaderValue(rsaJsonWebKey.getKeyId());
-            jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.RSA_USING_SHA256);
+            jws.setKey(key);
+            jws.setAlgorithmHeaderValue(AlgorithmIdentifiers.HMAC_SHA256);
 
             return jws.getCompactSerialization();
         } catch (JoseException e) {
             e.printStackTrace();
             return null;
-
         }
 
     }
@@ -67,10 +66,10 @@ public class JWTBuilder {
                 .setExpectedIssuer(jwtIssuer)
                 .setExpectedAudience("ALL")
                 .setExpectedSubject("AUTHTOKEN")
-                .setVerificationKey(rsaJsonWebKey.getKey())
+                .setVerificationKey(key)
                 .setJwsAlgorithmConstraints(
                         new AlgorithmConstraints(AlgorithmConstraints.ConstraintType.WHITELIST,
-                                AlgorithmIdentifiers.RSA_USING_SHA256))
+                                AlgorithmIdentifiers.HMAC_SHA256))
                 .build();
         try
         {
@@ -97,9 +96,8 @@ public class JWTBuilder {
     @PostConstruct
     public void init() {
         try {
-            rsaJsonWebKey = RsaJwkGenerator.generateJwk(2048);
-            rsaJsonWebKey.setKeyId(jwtSecret);
-        } catch (JoseException e) {
+            key = new HmacKey(jwtSecret.getBytes("UTF-8"));
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
