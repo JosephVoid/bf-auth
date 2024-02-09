@@ -8,4 +8,5 @@ public class SignUpRequest {
     public String password;
     public String picture;
     public String description;
+    public String otp;
 }
