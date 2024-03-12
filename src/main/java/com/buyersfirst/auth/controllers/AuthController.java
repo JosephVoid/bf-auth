@@ -96,7 +96,7 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/send-otp")
+    @PostMapping("/send-otp")
     @ResponseBody
     public void sendOTP(@RequestBody OTP bodyOtp) {
         try {
