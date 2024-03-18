@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,7 +50,7 @@ public class AuthController {
             if (user == null)
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email or password incorrect");
             if (bCryptPasswordEncoder.matches(auth.password, user.getPassword())) {
-                return jwtBuilder.generateToken(Integer.toString(user.getId()), "USER");
+                return jwtBuilder.generateToken(user.getUuid().toString(), "USER");
             } else {
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Email or password incorrect");
             }
@@ -74,7 +73,8 @@ public class AuthController {
             BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10);
 
             // Check if the otp supplied hashed and email match
-            if (!bCryptPasswordEncoder.matches(request.otp, redisCacheService.jedis.get(request.email)))
+            if (!bCryptPasswordEncoder.matches(request.otp,
+                    redisCacheService.jedis.get(request.email)))
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid OTP");
 
             // if match remove from redis and proceed to to DB
@@ -90,7 +90,7 @@ public class AuthController {
 
             userRepository.save(user);
 
-            return jwtBuilder.generateToken(Integer.toString(user.getId()), "USER");
+            return jwtBuilder.generateToken(user.getUuid().toString(), "USER");
         } catch (Exception exception) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getLocalizedMessage());
         }
