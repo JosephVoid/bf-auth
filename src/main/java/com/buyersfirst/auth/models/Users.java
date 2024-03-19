@@ -8,16 +8,14 @@ import org.hibernate.annotations.JdbcTypeCode;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "users")
+@Table(name = "users_uuid")
 public class Users {
-    public Users(Integer id, String first_name, String last_name, String email, String password, String picture,
+    public Users(UUID id, String first_name, String last_name, String email, String password, String picture,
             String description, String phone, Timestamp joinedOn) {
         this.id = id;
         this.first_name = first_name;
@@ -31,15 +29,21 @@ public class Users {
     }
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    @Column(name = "id", updatable = false)
+    @JdbcTypeCode(Types.VARCHAR)
+    private UUID id;
 
-    public Integer getId() {
+    public UUID getUuid() {
         return id;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
+    public void setUuid(UUID uuid) {
+        id = uuid;
+    }
+
+    @PrePersist
+    public void autofill() {
+        this.setUuid(UUID.randomUUID());
     }
 
     private String first_name;
@@ -128,23 +132,6 @@ public class Users {
 
     public void setPhone(String phone) {
         this.phone = phone;
-    }
-
-    @Column(name = "uuid", updatable = false)
-    @JdbcTypeCode(Types.VARCHAR)
-    private UUID Uuid;
-
-    public UUID getUuid() {
-        return Uuid;
-    }
-
-    public void setUuid(UUID uuid) {
-        Uuid = uuid;
-    }
-
-    @PrePersist
-    public void autofill() {
-        this.setUuid(UUID.randomUUID());
     }
 
     @Column(name = "joined_on")
