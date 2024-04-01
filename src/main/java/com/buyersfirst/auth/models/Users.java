@@ -13,7 +13,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
 
 @Entity
-@Table(name = "users_uuid")
+@Table(name = "users")
 public class Users {
     public Users(UUID id, String first_name, String last_name, String email, String password, String picture,
             String description, String phone, Timestamp joinedOn) {
