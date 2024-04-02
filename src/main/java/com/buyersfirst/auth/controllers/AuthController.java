@@ -44,7 +44,7 @@ public class AuthController {
     @Value("${template.otp}")
     private String otpTemplate;
 
-    @PostMapping("/")
+    @PostMapping("")
     public @ResponseBody String getToken(@RequestBody TokenRequest auth) {
         try {
             Users user = userRepository.findByEmail(auth.email);
