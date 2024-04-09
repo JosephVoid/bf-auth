@@ -39,6 +39,7 @@ public class Helpers {
         Random random = new Random();
         // Generate a random 6-digit number
         int randomNumber = 100000 + random.nextInt(900000);
+        System.out.println(randomNumber);
         return randomNumber;
     }
 

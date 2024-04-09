@@ -64,7 +64,7 @@ public class AuthController {
     @PostMapping("/signup")
     public @ResponseBody String signUp(@RequestBody SignUpRequest request) {
         try {
-            if (request.firstname == null || request.email == null || request.password == null || request.phone == null
+            if (request.first_name == null || request.email == null || request.password == null || request.phone == null
                     || request.otp == null)
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad Input");
             if (!helperMethods.validateEmail(request.email))
@@ -81,8 +81,8 @@ public class AuthController {
 
             // if match remove from redis and proceed to to DB
             Users user = new Users(
-                    request.firstname,
-                    request.lastname,
+                    request.first_name,
+                    request.last_name,
                     request.email,
                     bCryptPasswordEncoder.encode(request.password),
                     request.picture,
@@ -116,7 +116,8 @@ public class AuthController {
                 if (!notificationService.sendSMS(bodyOtp.phone.get(), msgToBeSent))
                     throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't send to queue");
             }
-            if (!helperMethods.validateEmail(bodyOtp.email) || !helperMethods.validatePhone(bodyOtp.phone)) {
+            if (!helperMethods.validateEmail(bodyOtp.email) ||
+                    !helperMethods.validatePhone(bodyOtp.phone)) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Phone or Email");
             }
             // Hash the OTP
