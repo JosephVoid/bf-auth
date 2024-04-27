@@ -89,9 +89,10 @@ public class AuthController {
                     request.description,
                     request.phone,
                     new Timestamp(System.currentTimeMillis()));
-
             userRepository.save(user);
-
+            // Remove OTP from cache
+            redisCacheService.jedis.del(request.email);
+            // Return a jwt token
             return jwtBuilder.generateToken(user.getUuid().toString(), "USER");
         } catch (Exception exception) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, exception.getLocalizedMessage());
