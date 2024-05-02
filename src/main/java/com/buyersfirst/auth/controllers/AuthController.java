@@ -106,7 +106,7 @@ public class AuthController {
             // Generate OTP
             String OTP[] = { Integer.toString(helperMethods.generateRandomNumber()) };
             String msgToBeSent = helperMethods.insertStrings(otpTemplate, OTP);
-
+            System.out.println(msgToBeSent);
             if (helperMethods.validateEmail(bodyOtp.email)) {
                 // Email
                 if (!notificationService.sendEmail(bodyOtp.email.get(), "One Time Passcode", msgToBeSent))
