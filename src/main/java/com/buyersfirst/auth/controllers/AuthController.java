@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.buyersfirst.auth.interfaces.OTP;
+import com.buyersfirst.auth.interfaces.PasswordRest;
 import com.buyersfirst.auth.interfaces.SignUpRequest;
 import com.buyersfirst.auth.interfaces.TokenRequest;
 import com.buyersfirst.auth.models.UserRepository;
@@ -43,6 +44,8 @@ public class AuthController {
 
     @Value("${template.otp}")
     private String otpTemplate;
+    @Value("${template.resetotp}")
+    private String otpResetTemplate;
 
     @PostMapping("")
     public @ResponseBody String getToken(@RequestBody TokenRequest auth) {
@@ -105,12 +108,18 @@ public class AuthController {
         try {
             // Generate OTP
             String OTP[] = { Integer.toString(helperMethods.generateRandomNumber()) };
-            String msgToBeSent = helperMethods.insertStrings(otpTemplate, OTP);
+            String msgToBeSent = bodyOtp.ForReset ? helperMethods.insertStrings(otpResetTemplate, OTP)
+                    : helperMethods.insertStrings(otpTemplate, OTP);
             System.out.println(msgToBeSent);
             if (helperMethods.validateEmail(bodyOtp.email)) {
                 // Email
-                if (!notificationService.sendEmail(bodyOtp.email.get(), "One Time Passcode", msgToBeSent))
-                    throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't send to queue");
+                if (bodyOtp.ForReset) {
+                    if (!notificationService.sendEmail(bodyOtp.email.get(), "Password Reset Code", msgToBeSent))
+                        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't send to queue");
+                } else {
+                    if (!notificationService.sendEmail(bodyOtp.email.get(), "One Time Passcode", msgToBeSent))
+                        throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't send to queue");
+                }
             }
             if (helperMethods.validatePhone(bodyOtp.phone)) {
                 // Phone
@@ -132,6 +141,30 @@ public class AuthController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getLocalizedMessage());
+        }
+    }
+
+    @PostMapping("/reset-password")
+    @ResponseBody
+    public void resetPassword(@RequestBody PasswordRest request) {
+        try {
+            if (request.newPassword == null || request.otp == null || request.email == null)
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bad Input");
+
+            BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(10);
+
+            // Check if the otp supplied hashed and email match
+            if (!bCryptPasswordEncoder.matches(request.otp,
+                    redisCacheService.jedis.get(request.email)))
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid OTP");
+
+            // Update User Password
+            userRepository.updateUserPass(request.email, bCryptPasswordEncoder.encode(request.newPassword));
+
+            // Remove OTP from cache
+            redisCacheService.jedis.del(request.email);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getLocalizedMessage());
         }
     }
 }
