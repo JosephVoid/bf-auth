@@ -111,6 +111,13 @@ public class AuthController {
             String msgToBeSent = bodyOtp.ForReset ? helperMethods.insertStrings(otpResetTemplate, OTP)
                     : helperMethods.insertStrings(otpTemplate, OTP);
             System.out.println(msgToBeSent);
+            if (!helperMethods.validateEmail(bodyOtp.email) && bodyOtp.email != null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Email");
+            }
+            if (!helperMethods.validatePhone(bodyOtp.phone) && bodyOtp.phone != null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Phone");
+            }
+
             if (helperMethods.validateEmail(bodyOtp.email)) {
                 // Email
                 if (bodyOtp.ForReset) {
@@ -126,10 +133,7 @@ public class AuthController {
                 if (!notificationService.sendSMS(bodyOtp.phone.get(), msgToBeSent))
                     throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Can't send to queue");
             }
-            if (!helperMethods.validateEmail(bodyOtp.email) ||
-                    !helperMethods.validatePhone(bodyOtp.phone)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Phone or Email");
-            }
+
             // Hash the OTP
             BCryptPasswordEncoder hasher = new BCryptPasswordEncoder(10);
             String hashedOTP = hasher.encode(OTP[0]);
