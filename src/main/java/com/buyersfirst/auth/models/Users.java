@@ -115,7 +115,7 @@ public class Users {
     }
 
     public Users(String first_name, String last_name, String email, String password, String picture, String description,
-            String phone, Timestamp JoinedOn) {
+            String phone, Timestamp JoinedOn, String affCode) {
         this.first_name = first_name;
         this.last_name = last_name;
         this.email = email;
@@ -124,6 +124,7 @@ public class Users {
         this.description = description;
         this.phone = phone;
         this.JoinedOn = JoinedOn;
+        this.affiliate = affCode;
     }
 
     public String getPhone() {
@@ -143,5 +144,16 @@ public class Users {
 
     public void setJoinedOn(Timestamp joinedOn) {
         JoinedOn = joinedOn;
+    }
+
+    @Column(nullable = true)
+    private String affiliate;
+
+    public String getAffiliate() {
+        return affiliate;
+    }
+
+    public void setAffiliate(String affiliate) {
+        this.affiliate = affiliate;
     }
 }

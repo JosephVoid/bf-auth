@@ -9,4 +9,5 @@ public class SignUpRequest {
     public String picture;
     public String description;
     public String otp;
+    public String affiliateCode;
 }

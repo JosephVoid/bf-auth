@@ -91,7 +91,8 @@ public class AuthController {
                     request.picture,
                     request.description,
                     request.phone,
-                    new Timestamp(System.currentTimeMillis()));
+                    new Timestamp(System.currentTimeMillis()),
+                    request.affiliateCode);
             userRepository.save(user);
             // Remove OTP from cache
             redisCacheService.jedis.del(request.email);
