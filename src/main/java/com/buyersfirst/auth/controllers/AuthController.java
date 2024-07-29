@@ -118,7 +118,9 @@ public class AuthController {
             if (!helperMethods.validatePhone(bodyOtp.phone) && bodyOtp.phone != null) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid Phone");
             }
-
+            if (bodyOtp.ForReset && userRepository.findUsersByEmail(bodyOtp.email.get()).isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email doesn't exist");
+            }
             if (helperMethods.validateEmail(bodyOtp.email)) {
                 // Email
                 if (bodyOtp.ForReset) {
